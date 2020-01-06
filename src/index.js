@@ -38,6 +38,16 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
+        /** Load Texture **/
+        const TEXTURE_PATH = proxyUrl+'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy.jpg';
+        let stacy_txt = new THREE.TextureLoader().load(TEXTURE_PATH);
+        stacy_txt.flipY = false;
+        const stacy_mtl = new THREE.MeshPhongMaterial({
+          map: stacy_txt,
+          color: 0xffffff,
+          skinning: true
+        });
+
         /** Create Loader **/
         var loader = new THREE.GLTFLoader();
         loader.load(  //model path, callback functions: i) once model is loaded, ii) during loading, iii) catch errors
@@ -49,6 +59,7 @@
             model.traverse(o => {
               o.castShadow = true;
               o.receiveShadow = true;
+              o.material = stacy_mtl;
             });
             //set the model's initial scale
             model.scale.set(7, 7, 7);
