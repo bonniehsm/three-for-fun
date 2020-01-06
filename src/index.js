@@ -17,6 +17,7 @@
       init();
 
       function init(){
+        const MODEL_PATH = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy_lightweight.glb';
         const canvas = document.querySelector('#c');
         const backgroundColor = 0xf1f1f1; //threejs references colours in a hexadecimal integer
 
@@ -35,6 +36,21 @@
         //set pixel ratio to that of device so mobile devices render correctly (otherwise canvas will display pixelated on high density screens))
         renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
+
+        /** Create Loader **/
+        var loader = new THREE.GLTFLoader();
+        loader.load(  //model path, callback functions: i) once model is loaded, ii) during loading, iii) catch errors
+          MODEL_PATH,
+          function(gltf){
+            model = gltf.scene;
+            let fileAnimations = gltf.animations;
+            scene.add(model);
+          },
+          undefined,  //don't need this function
+          function(error){
+            console.error(error);
+          }
+        );
 
         /** Add camera **/
 
