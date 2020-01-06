@@ -17,7 +17,8 @@
       init();
 
       function init(){
-        const MODEL_PATH = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy_lightweight.glb';
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const MODEL_PATH = proxyUrl + 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy_lightweight.glb';
         const canvas = document.querySelector('#c');
         const backgroundColor = 0xf1f1f1; //threejs references colours in a hexadecimal integer
 
@@ -44,6 +45,14 @@
           function(gltf){
             model = gltf.scene;
             let fileAnimations = gltf.animations;
+            //find all meshes and enable the ability to cast and receive shadows
+            model.traverse(o => {
+              o.castShadow = true;
+              o.receiveShadow = true;
+            });
+            //set the model's initial scale
+            model.scale.set(7, 7, 7);
+            model.position.y = -11;
             scene.add(model);
           },
           undefined,  //don't need this function
