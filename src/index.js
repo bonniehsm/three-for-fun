@@ -57,9 +57,11 @@
             let fileAnimations = gltf.animations;
             //find all meshes and enable the ability to cast and receive shadows
             model.traverse(o => {
-              o.castShadow = true;
-              o.receiveShadow = true;
-              o.material = stacy_mtl;
+              if(o.isMesh){
+                o.castShadow = true;
+                o.receiveShadow = true;
+                o.material = stacy_mtl;                
+              }
               //reference the neck and waist bones
               if(o.isBone && o.name === 'mixamorigSpine'){
                 waist = o;
@@ -180,71 +182,79 @@
         return needResize;
       }
 
+      document.addEventListener('mousemove', function(e){
+        var mousecoords = getMousePos(e);
+        if(neck && waist){
+          moveJoint(mousecoords, neck, 50);
+          moveJoint(mousecoords, waist, 30);
+        }
+      });
+
+      function getMousePos(e){
+        return { x: e.clientX, y: e.clientY };
+      }
+
+      /**
+      * Params: mouse = current mouse position,
+      *         joint = joint to move,
+      *         degreeLimit = limit (in degrees) that the joint is allowed to move
+      */
+      function moveJoint(mouse, joint, degreeLimit){
+        let degrees = getMouseDegrees(mouse.x, mouse.y, degreeLimit);
+        joint.rotation.x = THREE.Math.degToRad(degrees.x);
+        joint.rotation.y = THREE.Math.degToRad(degrees.y);
+      }
+
+      /**
+      * This function determines where the mouse is on the screen
+        in a percentage between the middle & each edge of the screen
+      * Params: x = x position of mouse
+      *         y = y position of mouse
+      *         degreeLimit = degree limit that join is allowed to move
+      */
+      function getMouseDegrees(x, y, degreeLimit){
+        let dx = 0,
+            dy = 0,
+            xdiff,
+            xPercentage,
+            ydiff,
+            yPercentage;
+        let w = { x: window.innerWidth, y: window.innerHeight };
+
+        //Left (rotate neck left between 0 and -degreeLimit)
+        if(x <= w.x / 2){
+          console.log(`left`);
+          //get the difference between the middle of the screen and cursor position
+          xdiff = w.x / 2 - x;
+          //find the percentage of that difference (percentage towards the edge of the screen)
+          xPercentage = (xdiff / (w.x / 2)) * 100;
+          //convert that to a percentage of the maximum rotation we allow for the neck
+          dx = ((degreeLimit * xPercentage) / 100) * -1;
+        }
+        //Right (rotate neck right between 0 and degreeLimit)
+        if(x >= w.x / 2){
+          console.log(`right`);
+          xdiff = x - w.x / 2;
+          xPercentage = (xdiff / (w.x / 2)) * 100;
+          dx = (degreeLimit * xPercentage) / 100;
+        }
+        //Up (rotate neck up between 0 and -degreeLimit)
+        if(y <= w.y / 2){
+          console.log(`up`);
+          ydiff = w.y / 2 - y;
+          yPercentage = (ydiff / (w.y / 2)) * 100;
+          //cut degreeLimit to half when model looks up
+          dy = (((degreeLimit * 0.5) * yPercentage) / 100) * -1;
+        }
+        //Down (rotate neck down between 0 and degreeLimit)
+        if(y >= w.y / 2){
+          console.log(`down`);
+          ydiff = y - w.y / 2;
+          yPercentage = (ydiff / (w.y / 2)) * 100;
+          dy = (degreeLimit * yPercentage) / 100;
+        }
+        console.log( `dx: ${dx}, dy: ${dy}`);
+        return { x: dx, y: dy };
+      }
+
 })();
-
-document.addEventListener('mousemove', function(e){
-  var mousecoords = getMousePos(e);
-  if(neck && waist){
-    moveJoint(mousecoords, neck, 50);
-    moveJoint(mousecoords, waist, 30);
-  }
-});
-
-function getMousePos(e){
-  return {
-    x: e.clientX,
-    y: e.clientY
-  };
-};
-
-function moveJoint(mouse, joint, degreeLimit){
-  let degrees = getMouseDegrees(mouse.x, mouse.y, degreeLimit);
-  joint.rotation.y = THREE.Math.degToRad(degrees.x);
-  joint.rotation.y = THREE.Math.degToRad(degrees.y);
-}
-
-/**
-* This function determines where the mouse is on the screen
-  in a percentage between the middle & each edge of the screen
-* Params: x = x position of mouse
-          y = y position of mouse
-          degreeLimit = degree limit that join is allowed to move
-*/
-function getMouseDegrees(x, y, degreeLimit){
-  let dx = 0,
-      dy = 0,
-      xdiff,
-      xPercentage,
-      ydiff,
-      yPercentage;
-  let w = { x: x.innerWidth, y: y.innerHeight };
-
-  //Left (rotate neck left between 0 and -degreeLimit)
-  if(x <= w.x/2){
-    //get the difference between the middle of the screen and cursor position
-    xdiff = w.x/2 - x;
-    //find the percentage of that difference (percentage towards the edge of the screen)
-    xPercentage = (xdiff/(w.x/2)) * 100;
-    //convert that to a percentage of the maximum rotation we allow for the neck
-    dx = ((degreeLimit * xPercentage) / 100) * -1;
-  }
-  //Right (rotate neck right between 0 and degreeLimit)
-  if(x >= w.x/2){
-    xdiff = x - w.x/2;
-    xPercentage = (xdiff/(w.x/2)) * 100;
-    dx = (degreeLimit * xPercentage) / 100;
-  }
-  //Up (rotate neck up between 0 and -degreeLimit)
-  if(y <= w.y/2){
-    ydiff = w.y/2 - y;
-    yPercentage = (ydiff/(w.y/2)) * 100;
-    //cut degreeLimit to half when model looks up
-    dy = (((degreeLimit * 0.5) * yPercentage) / 100) * -1;
-  }
-  //Down (rotate neck down between 0 and degreeLimit)
-  if(y >= w.y/2){
-    ydiff = y - w.y/2;
-    yPercentage = (ydiff/(w.y/2)) * 100;
-    dy = (degreeLimit * yPercentage) / 100;
-  }
-}
