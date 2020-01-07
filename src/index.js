@@ -65,6 +65,7 @@
             model.scale.set(7, 7, 7);
             model.position.y = -11;
             scene.add(model);
+            loaderAnim.remove();
           },
           undefined,  //don't need this function
           function(error){
@@ -124,6 +125,7 @@
       }
 
       /** Add Circle Accent **/
+
       let geometry = new THREE.SphereGeometry(8, 32, 32);
       let material = new THREE.MeshBasicMaterial({ color: 0x9bbffaf });
       let sphere = new THREE.Mesh(geometry, material);
