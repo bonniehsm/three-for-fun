@@ -110,6 +110,7 @@
         scene.add(dirLight);
 
         /** Add floor **/
+
         let floorGeometry = new THREE.PlaneGeometry(5000, 5000, 1, 1);
         let floorMaterial = new THREE.MeshPhongMaterial({
           color: 0xeeeeee,
@@ -121,6 +122,15 @@
         floor.position.y = -11;
         scene.add(floor);
       }
+
+      /** Add Circle Accent **/
+      let geometry = new THREE.SphereGeometry(8, 32, 32);
+      let material = new THREE.MeshBasicMaterial({ color: 0x9bbffaf });
+      let sphere = new THREE.Mesh(geometry, material);
+      scene.add(sphere);
+      sphere.position.z = -15;
+      sphere.position.y = -3;
+      sphere.position.x = -0.25;
 
       function update(){
         if(resizeRendererToDisplaySize(renderer)){
