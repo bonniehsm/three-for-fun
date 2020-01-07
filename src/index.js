@@ -83,7 +83,7 @@
             mixer = new THREE.AnimationMixer(model);
             //get list of all animation clips except 'idle'
             let clips = fileAnimations.filter(val => val.name !== 'idle');
-            //convert all clips into Three.js AnimationClips and add into variable possibleAnims
+            //convert all clips into Three.js AnimationActions and add into variable possibleAnims
             possibleAnims = clips.map(val => {
               let clip = THREE.AnimationClip.findByName(clips, val.name);
               //splice out waist tracks
@@ -201,8 +201,62 @@
         return needResize;
       }
 
+      //event listeners to detect click/touch events on the model
+      //since model is not part of the DOM, raycasting is needed
       window.addEventListener('click', e => raycast(e));
       window.addEventListener('touchend', e => raycast(e, true));
+
+      //Raycasting means shooting a laser beam in a direction and returning the objects that it hit
+      //  In this case, we're shooting from our camera in the direction of our cursor
+      function raycast(e, touch = false){
+        let mouse = {};
+        if(touch){
+          mouse.x = 2 * (e.changedTouches[0].clientX / window.innerWidth) - 1;
+          mouse.y = 1 - 2 * (e.changedTouches[0].clientY / window.innerHeight);
+        }else{
+          mouse.x = 2 * (e.clientX / window.innerWidth) - 1;
+          mouse.y = 1 - 2 * (e.clientY / window.innerHeight);
+        }
+
+        //raycast from the camera to the mouse position
+        raycaster.setFromCamera(mouse, camera);
+
+        //calculate objects intersecting the picking ray
+        let intersects = raycaster.intersectObjects(scene.children, true);
+        if(intersects[0]){
+          let object = intersects[0].object;
+          if(object.name === 'stacy'){
+            if(!currentlyAnimating){
+              currentlyAnimating = true;
+              playOnClick();
+            }
+          }
+        }
+      }
+
+      //Get a random animation, and play it
+      function playOnClick(){
+        let anim = Math.floor(Math.random() * possibleAnims.length) + 0;
+        playModifierAnimation(idle, 0.25, possibleAnims[anim], 0.25);
+      }
+
+      /**
+      * Params: from Threejs AnimationAction,
+      *         speed for blending from clip,
+      *         to Threejs AnimationAction,
+      *         speed for blending to clip
+      */
+      function playModifierAnimation(from, fSpeed, to, tSpeed){
+        to.setLoop(THREE.LoopOnce);
+        to.reset();
+        to.play();
+        from.crossFadeTo(to, fSpeed, true);
+        setTimeout(function(){
+          from.enabled = true;
+          to.crossFadeTo(from, tSpeed, true);
+          currentlyAnimating = false;
+        }, to._clip.duration * 1000 - ((tSpeed + fSpeed) * 1000));
+      }
 
       document.addEventListener('mousemove', function(e){
         var mousecoords = getMousePos(e);
@@ -245,7 +299,6 @@
 
         //Left (rotate neck left between 0 and -degreeLimit)
         if(x <= w.x / 2){
-          console.log(`left`);
           //get the difference between the middle of the screen and cursor position
           xdiff = w.x / 2 - x;
           //find the percentage of that difference (percentage towards the edge of the screen)
@@ -255,14 +308,12 @@
         }
         //Right (rotate neck right between 0 and degreeLimit)
         if(x >= w.x / 2){
-          console.log(`right`);
           xdiff = x - w.x / 2;
           xPercentage = (xdiff / (w.x / 2)) * 100;
           dx = (degreeLimit * xPercentage) / 100;
         }
         //Up (rotate neck up between 0 and -degreeLimit)
         if(y <= w.y / 2){
-          console.log(`up`);
           ydiff = w.y / 2 - y;
           yPercentage = (ydiff / (w.y / 2)) * 100;
           //cut degreeLimit to half when model looks up
@@ -270,7 +321,6 @@
         }
         //Down (rotate neck down between 0 and degreeLimit)
         if(y >= w.y / 2){
-          console.log(`down`);
           ydiff = y - w.y / 2;
           yPercentage = (ydiff / (w.y / 2)) * 100;
           dy = (degreeLimit * yPercentage) / 100;
