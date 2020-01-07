@@ -60,21 +60,25 @@
               if(o.isMesh){
                 o.castShadow = true;
                 o.receiveShadow = true;
-                o.material = stacy_mtl;                
+                o.material = stacy_mtl;
               }
               //reference the neck and waist bones
-              if(o.isBone && o.name === 'mixamorigSpine'){
-                waist = o;
-              }
               if(o.isBone && o.name === 'mixamorigNeck'){
                 neck = o;
               }
+              if(o.isBone && o.name === 'mixamorigSpine'){
+                waist = o;
+              }
             });
+
             //set the model's initial scale
             model.scale.set(7, 7, 7);
             model.position.y = -11;
+
             scene.add(model);
+
             loaderAnim.remove();
+
             //set up animations
             mixer = new THREE.AnimationMixer(model);
             let idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'idle');
@@ -166,6 +170,7 @@
         renderer.render(scene, camera);
         requestAnimationFrame(update);
       }
+
       update();
 
       function resizeRendererToDisplaySize(renderer){
@@ -201,8 +206,8 @@
       */
       function moveJoint(mouse, joint, degreeLimit){
         let degrees = getMouseDegrees(mouse.x, mouse.y, degreeLimit);
-        joint.rotation.x = THREE.Math.degToRad(degrees.x);
-        joint.rotation.y = THREE.Math.degToRad(degrees.y);
+        joint.rotation.x = THREE.Math.degToRad(degrees.y);
+        joint.rotation.y = THREE.Math.degToRad(degrees.x);
       }
 
       /**
