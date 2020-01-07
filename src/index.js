@@ -66,6 +66,11 @@
             model.position.y = -11;
             scene.add(model);
             loaderAnim.remove();
+            //set up animations
+            mixer = new THREE.AnimationMixer(model);
+            let idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'idle');
+            idle = mixer.clipAction(idleAnim);
+            idle.play();
           },
           undefined,  //don't need this function
           function(error){
@@ -135,6 +140,10 @@
       sphere.position.x = -0.25;
 
       function update(){
+        if(mixer){
+          //tie animation to the clock rather than the frame rate
+          mixer.update(clock.getDelta());
+        }
         if(resizeRendererToDisplaySize(renderer)){
           const canvas = renderer.domElement;
           camera.aspect = canvas.clientWidth / canvas.clientHeight;
