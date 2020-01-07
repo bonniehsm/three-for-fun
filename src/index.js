@@ -81,6 +81,18 @@
 
             //set up animations
             mixer = new THREE.AnimationMixer(model);
+            //get list of all animation clips except 'idle'
+            let clips = fileAnimations.filter(val => val.name !== 'idle');
+            //convert all clips into Three.js AnimationClips and add into variable possibleAnims
+            possibleAnims = clips.map(val => {
+              let clip = THREE.AnimationClip.findByName(clips, val.name);
+              //splice out waist tracks
+              clip.tracks.splice(3, 3);
+              //splice out neck tracks
+              clip.tracks.splice(9, 3);
+              clip = mixer.clipAction(clip);
+              return clip;
+            })
             let idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'idle');
 
             //splice the animation tracks for neck and waist
@@ -145,17 +157,19 @@
         floor.receiveShadow = true;
         floor.position.y = -11;
         scene.add(floor);
-      }
 
-      /** Add Circle Accent **/
 
-      let geometry = new THREE.SphereGeometry(8, 32, 32);
-      let material = new THREE.MeshBasicMaterial({ color: 0x9bbffaf });
-      let sphere = new THREE.Mesh(geometry, material);
-      scene.add(sphere);
-      sphere.position.z = -15;
-      sphere.position.y = -3;
-      sphere.position.x = -0.25;
+        /** Add Circle Accent **/
+
+        let geometry = new THREE.SphereGeometry(8, 32, 32);
+        let material = new THREE.MeshBasicMaterial({ color: 0x9bbffaf });
+        let sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
+        sphere.position.z = -15;
+        sphere.position.y = -3;
+        sphere.position.x = -0.25;
+
+      } //init
 
       function update(){
         if(mixer){
@@ -186,6 +200,9 @@
         }
         return needResize;
       }
+
+      window.addEventListener('click', e => raycast(e));
+      window.addEventListener('touchend', e => raycast(e, true));
 
       document.addEventListener('mousemove', function(e){
         var mousecoords = getMousePos(e);
@@ -258,7 +275,7 @@
           yPercentage = (ydiff / (w.y / 2)) * 100;
           dy = (degreeLimit * yPercentage) / 100;
         }
-        console.log( `dx: ${dx}, dy: ${dy}`);
+
         return { x: dx, y: dy };
       }
 
